@@ -2,6 +2,7 @@ package com.kampplus.hava.ui.forecast.sky
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
+import com.kampplus.hava.model.CitySnapshot
 import com.kampplus.hava.model.Forecast
 import com.kampplus.hava.model.WeatherCondition
 import com.kampplus.hava.ui.forecast.sunProgress
@@ -58,6 +59,10 @@ data class SkyState(val scene: SkyScene, val phase: DayPhase, val sunProgress: F
         fun at(forecast: Forecast, time: LocalDateTime, weatherCode: Int, isDay: Boolean = time.hour in 7..18): SkyState {
             val day = forecast.daily.firstOrNull { it.date == time.toLocalDate() }
             return of(time, weatherCode, day?.sunrise, day?.sunset, isDay)
+        }
+
+        fun from(snapshot: CitySnapshot): SkyState = with(snapshot) {
+            of(localTime, weatherCode, sunrise, sunset, isDay)
         }
 
         fun of(time: LocalDateTime, weatherCode: Int, sunrise: LocalDateTime?, sunset: LocalDateTime?, isDay: Boolean) = SkyState(

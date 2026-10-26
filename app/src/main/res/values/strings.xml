@@ -11,7 +11,7 @@
     <string name="app_name">Hava</string>
 
     <!-- Şehir listesi ekranı -->
-    <string name="search_hint">Şehir ara</string>
+    <string name="search_hint">İl ara veya plaka yaz</string>
     <string name="action_clear">Temizle</string>
     <string name="action_retry">Tekrar dene</string>
 
@@ -32,4 +32,8 @@
     <string name="detail_now_at">Şimdi · %1$s</string>
     <string name="detail_back_to_now">Şimdiye dön</string>
     <string name="detail_time_machine_hint">Bir saate dokun ya da basılı tutup kaydır: gökyüzü o saate gider.</string>
+
+    <!-- Şehir listesi (yarışma tasarımı) -->
+    <string name="city_featured_title">Türkiye\'nin 81 ili</string>
+    <string name="city_results_count">%1$d sonuç</string>
 </resources>

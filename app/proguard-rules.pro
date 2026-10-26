@@ -7,7 +7,6 @@
 -keepattributes Signature
 -keepattributes *Annotation*
 -keep class com.kampplus.hava.model.** { *; }
--keep class com.kampplus.hava.data.CitySearchResponse { *; }
 -keep class com.kampplus.hava.data.ForecastResponse { *; }
 -keep class com.kampplus.hava.data.CurrentResponse { *; }
 -keep class com.kampplus.hava.data.HourlyResponse { *; }
@@ -24,7 +23,6 @@
 
 # --- Retrofit ---
 # Servis arayuzleri yansima ile uygulanir.
--keep,allowobfuscation interface com.kampplus.hava.data.CityApi
 -keep,allowobfuscation interface com.kampplus.hava.data.ForecastApi
 -keepattributes RuntimeVisibleAnnotations,RuntimeVisibleParameterAnnotations
 -keepclassmembers,allowshrinking,allowobfuscation interface * {

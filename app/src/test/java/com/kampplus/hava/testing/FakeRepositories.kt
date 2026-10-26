@@ -1,8 +1,8 @@
 package com.kampplus.hava.testing
 
-import com.kampplus.hava.data.CityRepository
 import com.kampplus.hava.data.WeatherRepository
 import com.kampplus.hava.model.City
+import com.kampplus.hava.model.CitySnapshot
 import com.kampplus.hava.model.CurrentWeather
 import com.kampplus.hava.model.Forecast
 import java.time.LocalDateTime
@@ -14,31 +14,6 @@ import java.time.LocalDateTime
  * testleri internete çıkmadan, istenen her sonucu (başarı / boş / hata)
  * kolayca üretebilir.
  */
-
-/**
- * @param result Her çağrıda dönecek liste.
- * @param error Doluysa [search] bu hatayı fırlatır.
- */
-class FakeCityRepository(
-    var result: List<City> = emptyList(),
-    var error: Throwable? = null
-) : CityRepository {
-
-    /** Son aranan metin; ViewModel'in doğru sorguyu ilettiğini doğrulamak için. */
-    var lastQuery: String? = null
-        private set
-
-    /** Kaç kez arama yapıldığı; "Tekrar dene" davranışını doğrulamak için. */
-    var callCount: Int = 0
-        private set
-
-    override suspend fun search(query: String): List<City> {
-        lastQuery = query
-        callCount++
-        error?.let { throw it }
-        return result
-    }
-}
 
 /** @param error Doluysa [getForecast] bu hatayı fırlatır. */
 class FakeWeatherRepository(
@@ -54,18 +29,21 @@ class FakeWeatherRepository(
         error?.let { throw it }
         return result
     }
+
+    /** Kaç kez toplu anlık durum istendiği; gereksiz istek atılmadığını doğrulamak için. */
+    var snapshotCallCount: Int = 0
+        private set
+
+    /** Her şehir için aynı hazır anlık durumu döner. */
+    override suspend fun getSnapshots(cities: List<City>): Map<Int, CitySnapshot> {
+        snapshotCallCount++
+        error?.let { throw it }
+        return cities.associate { it.plate to sampleSnapshot() }
+    }
 }
 
-/** Testlerde tekrar tekrar yazmamak için hazır bir şehir. */
-fun sampleCity(id: Long = 323786L, name: String = "Ankara") = City(
-    id = id,
-    name = name,
-    latitude = 39.91987,
-    longitude = 32.85427,
-    countryCode = "TR",
-    country = "Türkiye",
-    admin1 = "Ankara"
-)
+/** Testlerde tekrar tekrar yazmamak için hazır bir il. */
+fun sampleCity(plate: Int = 6, name: String = "Ankara") = City(plate, name, latitude = 39.93, longitude = 32.86)
 
 /** Testlerde tekrar tekrar yazmamak için hazır bir tahmin. */
 fun sampleForecast() = Forecast(
@@ -76,4 +54,12 @@ fun sampleForecast() = Forecast(
     ),
     hourly = emptyList(),
     daily = emptyList()
+)
+
+/** Testlerde tekrar tekrar yazmamak için hazır bir anlık durum. */
+fun sampleSnapshot() = CitySnapshot(
+    temperatureC = 18.0,
+    weatherCode = 61,
+    isDay = true,
+    localTime = LocalDateTime.parse("2026-09-24T11:30")
 )

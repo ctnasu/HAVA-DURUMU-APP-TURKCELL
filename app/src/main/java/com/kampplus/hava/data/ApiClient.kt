@@ -17,11 +17,7 @@ import retrofit2.converter.gson.GsonConverterFactory
  */
 object ApiClient {
 
-    private const val GEOCODING_BASE_URL = "https://geocoding-api.open-meteo.com/"
     private const val FORECAST_BASE_URL = "https://api.open-meteo.com/"
-
-    /** Şehir arama istemcisi. Kullanımı: `ApiClient.cityApi.search("Ankara")` */
-    val cityApi: CityApi by lazy { createApi(GEOCODING_BASE_URL) }
 
     /** Hava tahmini istemcisi. */
     val forecastApi: ForecastApi by lazy { createApi(FORECAST_BASE_URL) }
@@ -31,7 +27,7 @@ object ApiClient {
      *
      * `GsonConverterFactory`: gelen JSON'u data class'lara çeviren dönüştürücü.
      * `inline` + `reified T`: çağrı yerindeki tipi çalışma zamanında bilebilmek için;
-     * böylece `CityApi::class.java` yazmaya gerek kalmaz.
+     * böylece `ForecastApi::class.java` yazmaya gerek kalmaz.
      */
     private inline fun <reified T> createApi(baseUrl: String): T = Retrofit.Builder()
         .baseUrl(baseUrl)

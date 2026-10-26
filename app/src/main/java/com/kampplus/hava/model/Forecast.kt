@@ -51,3 +51,19 @@ data class DailyForecast(
     val sunrise: LocalDateTime? = null,
     val sunset: LocalDateTime? = null
 )
+
+/**
+ * Bir şehrin "şu an" özeti: liste kartındaki mini gökyüzünü çizmeye yetecek kadar veri.
+ *
+ * [localTime] verinin alındığı andaki yerel saattir. Kartta canlı saat göstermek için
+ * [utcOffsetSeconds] kullanılır: saat, dakikada bir telefonun saatinden hesaplanır.
+ */
+data class CitySnapshot(
+    val temperatureC: Double,
+    val weatherCode: Int,
+    val isDay: Boolean,
+    val localTime: LocalDateTime,
+    val sunrise: LocalDateTime? = null,
+    val sunset: LocalDateTime? = null,
+    val utcOffsetSeconds: Int? = null
+)

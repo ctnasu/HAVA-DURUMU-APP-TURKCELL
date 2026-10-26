@@ -1,5 +1,6 @@
 package com.kampplus.hava.ui.city
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,42 +10,45 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kampplus.hava.R
+import com.kampplus.hava.data.CityCatalog
 import com.kampplus.hava.model.City
-import com.kampplus.hava.ui.LoadState
+import com.kampplus.hava.model.CitySnapshot
 import com.kampplus.hava.ui.component.EmptyView
-import com.kampplus.hava.ui.component.ErrorView
-import com.kampplus.hava.ui.component.ShimmerList
+import com.kampplus.hava.ui.component.glassTextFieldColors
 import com.kampplus.hava.ui.theme.HavaTheme
 
 /**
- * Şehir arama ekranının "bağlayıcı" katmanı.
+ * İl listesi ekranının "bağlayıcı" katmanı.
  *
  * Tek işi ViewModel'i edinip state'i toplamak ve [CityScreen]'e aktarmaktır.
- * Bu ayrım sayesinde [CityScreen] ViewModel tanımaz: @Preview'da ve testte
+ * Bu ayrım sayesinde [CityScreen] ViewModel tanımaz: önizlemede ve testte
  * elle state verilerek çalıştırılabilir.
  *
  * `collectAsStateWithLifecycle`: StateFlow'u Compose state'ine
@@ -53,79 +57,99 @@ import com.kampplus.hava.ui.theme.HavaTheme
 @Composable
 fun CityRoute(onCityClick: (City) -> Unit, modifier: Modifier = Modifier, viewModel: CityViewModel = viewModel()) {
     val query by viewModel.query.collectAsStateWithLifecycle()
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val cities by viewModel.results.collectAsStateWithLifecycle()
+    val snapshots by viewModel.snapshots.collectAsStateWithLifecycle()
 
     CityScreen(
         query = query,
-        uiState = uiState,
+        cities = cities,
+        snapshots = snapshots,
         onQueryChange = viewModel::onQueryChange,
-        onSearch = viewModel::search,
         onCityClick = onCityClick,
         modifier = modifier
     )
 }
 
 /**
- * Şehir arama ekranı: `when` ile her duruma bir görünüm.
+ * İl listesi ekranı: koyu bir gece zemini üstünde, her il kendi gökyüzüyle.
  *
- * State tutmaz, yalnızca aldığı değerleri çizer ve olayları yukarı bildirir.
+ * Kutu boşken 81 ilin tamamı, yazınca eşleşenler gösterilir; eşleşme yoksa açıklayıcı
+ * bir boş durum çıkar. State tutmaz, yalnızca aldığı değerleri çizer ve olayları
+ * yukarı bildirir.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CityScreen(
     query: String,
-    uiState: LoadState<List<City>>,
+    cities: List<City>,
+    snapshots: Map<Int, CitySnapshot>,
     onQueryChange: (String) -> Unit,
-    onSearch: () -> Unit,
     onCityClick: (City) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Scaffold(
-        modifier = modifier,
-        topBar = { TopAppBar(title = { Text(stringResource(R.string.app_name)) }) }
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-        ) {
-            SearchBar(
-                query = query,
-                onQueryChange = onQueryChange,
-                onSearch = onSearch,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-            )
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                // Dört durumun tamamı burada karşılanır. `sealed` olduğu için
-                // bir dalı unutursak Kotlin derleme hatası verir.
-                when (uiState) {
-                    LoadState.Loading -> ShimmerList()
-                    is LoadState.Success -> CityList(cities = uiState.data, onCityClick = onCityClick)
-                    LoadState.Empty -> EmptyView(
-                        title = "Şehir bulunamadı",
-                        message = "Yazımı kontrol et ya da başka bir şehir dene."
-                    )
-                    is LoadState.Error -> ErrorView(message = uiState.message, onRetry = onSearch)
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(Brush.verticalGradient(listOf(Color(0xFF060A1A), Color(0xFF17223F))))
+    ) {
+        Scaffold(containerColor = Color.Transparent, contentColor = Color.White) { innerPadding ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+            ) {
+                Header(query = query, resultCount = cities.size)
+                SearchField(
+                    query = query,
+                    onQueryChange = onQueryChange,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                )
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    if (cities.isEmpty()) {
+                        EmptyView(
+                            title = "İl bulunamadı",
+                            message = "Yazımı kontrol et ya da plaka kodunu dene (ör. 34)."
+                        )
+                    } else {
+                        CityList(cities = cities, snapshots = snapshots, onCityClick = onCityClick)
+                    }
                 }
             }
         }
     }
 }
 
+@Composable
+private fun Header(query: String, resultCount: Int) {
+    Column(modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 12.dp, bottom = 4.dp)) {
+        Text(
+            text = stringResource(R.string.app_name),
+            style = MaterialTheme.typography.displaySmall,
+            fontWeight = FontWeight.Bold
+        )
+        Text(
+            text = if (query.isBlank()) {
+                stringResource(R.string.city_featured_title)
+            } else {
+                stringResource(R.string.city_results_count, resultCount)
+            },
+            style = MaterialTheme.typography.titleMedium,
+            color = Color.White.copy(alpha = 0.6f)
+        )
+    }
+}
+
 /**
- * Arama kutusu.
- *
- * State tutmaz: değeri yukarıdan alır, her değişikliği yukarıya bildirir
- * ("değer aşağı, olay yukarı" — state hoisting).
+ * Cam görünümlü arama kutusu. Liste her tuşta anında süzülür; klavyedeki "Ara" tuşu
+ * yalnızca klavyeyi kapatır.
  */
 @Composable
-private fun SearchBar(query: String, onQueryChange: (String) -> Unit, onSearch: () -> Unit, modifier: Modifier = Modifier) {
+private fun SearchField(query: String, onQueryChange: (String) -> Unit, modifier: Modifier = Modifier) {
     val keyboardController = LocalSoftwareKeyboardController.current
-    OutlinedTextField(
+    TextField(
         value = query,
         onValueChange = onQueryChange,
         modifier = modifier.fillMaxWidth(),
-        label = { Text(stringResource(R.string.search_hint)) },
+        placeholder = { Text(stringResource(R.string.search_hint)) },
         leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
         trailingIcon = {
             // Temizle düğmesi yalnızca kutu doluyken görünür.
@@ -136,67 +160,64 @@ private fun SearchBar(query: String, onQueryChange: (String) -> Unit, onSearch: 
             }
         },
         singleLine = true,
+        shape = RoundedCornerShape(20.dp),
+        colors = glassTextFieldColors(),
         // Klavyedeki Enter tuşu "Ara" olur.
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-        keyboardActions = KeyboardActions(
-            onSearch = {
-                keyboardController?.hide()
-                onSearch()
-            }
-        )
+        keyboardActions = KeyboardActions(onSearch = { keyboardController?.hide() })
     )
 }
 
 /**
- * Kaydırılabilir şehir listesi.
+ * Kaydırılabilir il listesi.
  *
- * `LazyColumn` tembeldir: yüzlerce şehir olsa da yalnızca ekranda görünen satırlar
- * çizilir, kaybolanlar geri dönüştürülür.
+ * `LazyColumn` tembeldir: 81 il olsa da yalnızca ekranda görünen kartlar (ve her
+ * birinin canlı gökyüzü) çizilir; kaybolanlar bırakılır.
  *
- * `key = { it.id }`: listedeki öğeler değiştiğinde Compose hangi satırın hangisi
- * olduğunu bilir; gereksiz yeniden çizim yapmaz.
+ * `key = { it.plate }`: liste değiştiğinde Compose hangi kartın hangisi olduğunu bilir.
+ * `animateItem()`: arama sonucu değişince kartlar yerlerine kayarak/solarak geçer.
  */
 @Composable
-private fun CityList(cities: List<City>, onCityClick: (City) -> Unit, modifier: Modifier = Modifier) {
+private fun CityList(cities: List<City>, snapshots: Map<Int, CitySnapshot>, onCityClick: (City) -> Unit, modifier: Modifier = Modifier) {
     LazyColumn(
         modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        items(items = cities, key = { it.id }) { city ->
-            CityCard(city = city, onClick = { onCityClick(city) })
+        items(items = cities, key = { it.plate }) { city ->
+            CityCard(
+                city = city,
+                snapshot = snapshots[city.plate],
+                onClick = { onCityClick(city) },
+                modifier = Modifier.animateItem()
+            )
         }
     }
 }
 
-@Preview(showBackground = true)
+@Preview
 @Composable
 private fun CityScreenPreview() {
     HavaTheme {
         CityScreen(
-            query = "Ankara",
-            uiState = LoadState.Success(
-                listOf(
-                    City(323786, "Ankara", 39.91987, 32.85427, "TR", "Türkiye", "Ankara"),
-                    City(738648, "Ankara", 41.0050, 39.7269, "TR", "Türkiye", "Trabzon")
-                )
-            ),
+            query = "",
+            cities = CityCatalog.cities.take(5),
+            snapshots = emptyMap(),
             onQueryChange = {},
-            onSearch = {},
             onCityClick = {}
         )
     }
 }
 
-@Preview(showBackground = true)
+@Preview
 @Composable
 private fun CityScreenEmptyPreview() {
     HavaTheme {
         CityScreen(
             query = "xyz",
-            uiState = LoadState.Empty,
+            cities = emptyList(),
+            snapshots = emptyMap(),
             onQueryChange = {},
-            onSearch = {},
             onCityClick = {}
         )
     }

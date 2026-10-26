@@ -1,6 +1,9 @@
 package com.kampplus.hava.data
 
+import com.google.gson.Gson
+import com.google.gson.JsonElement
 import com.google.gson.annotations.SerializedName
+import com.kampplus.hava.model.CitySnapshot
 import com.kampplus.hava.model.CurrentWeather
 import com.kampplus.hava.model.DailyForecast
 import com.kampplus.hava.model.Forecast
@@ -27,6 +30,9 @@ import java.time.LocalDateTime
 data class ForecastResponse(
     val latitude: Double = 0.0,
     val longitude: Double = 0.0,
+    /** Şehrin UTC'ye göre farkı; listede canlı yerel saati göstermek için. */
+    @SerializedName("utc_offset_seconds")
+    val utcOffsetSeconds: Int? = null,
     val current: CurrentResponse? = null,
     val hourly: HourlyResponse? = null,
     val daily: DailyResponse? = null
@@ -139,4 +145,26 @@ private fun DailyResponse?.toDailyForecasts(): List<DailyForecast> {
             sunset = sunset?.getOrNull(index)?.let(LocalDateTime::parse)
         )
     }
+}
+
+/**
+ * Toplu anlık durum yanıtını, istekteki konum sırasıyla [CitySnapshot] listesine çevirir.
+ * Eksik `current` bloğu olan konum için `null` döner; kart o zaman gökyüzüsüz çizilir.
+ */
+fun parseSnapshots(json: JsonElement, gson: Gson = Gson()): List<CitySnapshot?> {
+    val elements = if (json.isJsonArray) json.asJsonArray.toList() else listOf(json)
+    return elements.map { gson.fromJson(it, ForecastResponse::class.java).toSnapshot() }
+}
+
+private fun ForecastResponse.toSnapshot(): CitySnapshot? {
+    val now = current ?: return null
+    return CitySnapshot(
+        temperatureC = now.temperature,
+        weatherCode = now.weatherCode,
+        isDay = now.isDay != 0,
+        localTime = LocalDateTime.parse(now.time),
+        sunrise = daily?.sunrise?.firstOrNull()?.let(LocalDateTime::parse),
+        sunset = daily?.sunset?.firstOrNull()?.let(LocalDateTime::parse),
+        utcOffsetSeconds = utcOffsetSeconds
+    )
 }

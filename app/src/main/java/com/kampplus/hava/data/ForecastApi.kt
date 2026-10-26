@@ -1,5 +1,6 @@
 package com.kampplus.hava.data
 
+import com.google.gson.JsonElement
 import retrofit2.http.GET
 import retrofit2.http.Query
 
@@ -33,6 +34,23 @@ interface ForecastApi {
         @Query("forecast_days") forecastDays: Int = FORECAST_DAYS,
         @Query("timezone") timezone: String = "auto"
     ): ForecastResponse
+
+    /**
+     * Birden çok konumun anlık durumunu **tek istekte** getirir.
+     *
+     * Open-Meteo virgülle ayrılmış koordinat listesi kabul eder: 10 kart için 10 istek
+     * yerine 1 istek. Yanıt, birden fazla konum varsa dizi, tek konum varsa nesnedir;
+     * bu yüzden ham [JsonElement] alıp [parseSnapshots] ile çözüyoruz.
+     */
+    @GET("v1/forecast")
+    suspend fun getSnapshots(
+        @Query("latitude") latitudes: String,
+        @Query("longitude") longitudes: String,
+        @Query("current") current: String = "temperature_2m,weather_code,is_day",
+        @Query("daily") daily: String = "sunrise,sunset",
+        @Query("forecast_days") forecastDays: Int = 1,
+        @Query("timezone") timezone: String = "auto"
+    ): JsonElement
 
     companion object {
         const val CURRENT_FIELDS =
