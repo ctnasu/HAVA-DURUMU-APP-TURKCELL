@@ -43,7 +43,10 @@ data class CurrentResponse(
     @SerializedName("relative_humidity_2m")
     val relativeHumidity: Int? = null,
     @SerializedName("wind_speed_10m")
-    val windSpeed: Double? = null
+    val windSpeed: Double? = null,
+    /** 1 gündüz, 0 gece. Gökyüzü arka planı buna göre çizilir. */
+    @SerializedName("is_day")
+    val isDay: Int? = null
 )
 
 data class HourlyResponse(
@@ -65,7 +68,9 @@ data class DailyResponse(
     @SerializedName("temperature_2m_min")
     val temperatureMin: List<Double?>? = null,
     @SerializedName("precipitation_probability_max")
-    val precipitationProbabilityMax: List<Int?>? = null
+    val precipitationProbabilityMax: List<Int?>? = null,
+    val sunrise: List<String?>? = null,
+    val sunset: List<String?>? = null
 )
 
 /**
@@ -91,7 +96,9 @@ private fun CurrentResponse.toCurrentWeather() = CurrentWeather(
     observedAt = LocalDateTime.parse(time),
     apparentTemperatureC = apparentTemperature,
     humidityPercent = relativeHumidity,
-    windSpeedKmh = windSpeed
+    windSpeedKmh = windSpeed,
+    // Alan gelmezse gündüz varsayılır; gece/gündüz ayrımı yalnızca görseli etkiler.
+    isDay = isDay != 0
 )
 
 /**
@@ -127,7 +134,9 @@ private fun DailyResponse?.toDailyForecasts(): List<DailyForecast> {
             minTemperatureC = min,
             maxTemperatureC = max,
             weatherCode = code,
-            precipitationProbability = precipitationProbabilityMax?.getOrNull(index)
+            precipitationProbability = precipitationProbabilityMax?.getOrNull(index),
+            sunrise = sunrise?.getOrNull(index)?.let(LocalDateTime::parse),
+            sunset = sunset?.getOrNull(index)?.let(LocalDateTime::parse)
         )
     }
 }

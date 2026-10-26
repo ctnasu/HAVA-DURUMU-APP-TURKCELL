@@ -1,8 +1,10 @@
 package com.kampplus.hava
 
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.kampplus.hava.ui.HavaNavHost
@@ -27,8 +29,12 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         Log.d(TAG, "onCreate")
 
-        // İçeriği durum ve navigasyon çubuklarının altına kadar yayar.
-        enableEdgeToEdge()
+        // İçeriği durum ve navigasyon çubuklarının altına kadar yayar. Uygulamanın tüm
+        // ekranları koyu bir gökyüzü üstünde olduğu için sistem ikonları her zaman beyazdır.
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
+            navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT)
+        )
 
         // Süslü parantezin içi Compose dünyasıdır.
         setContent {

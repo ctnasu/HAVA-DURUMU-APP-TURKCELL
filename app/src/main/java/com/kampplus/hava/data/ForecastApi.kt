@@ -6,9 +6,8 @@ import retrofit2.http.Query
 /**
  * Hava tahmini servisinin menüsü.
  *
- * [CityApi] ile aynı mantık, farklı sunucu: arama `geocoding-api.open-meteo.com`,
- * tahmin ise `api.open-meteo.com` adresinden gelir. Bu yüzden [ApiClient] içinde
- * iki ayrı Retrofit kurulumu vardır.
+ * Retrofit bu arayüzün gövdesini kendisi yazar: biz yalnızca hangi adrese, hangi
+ * parametrelerle gidileceğini tarif ederiz. Tahmin `api.open-meteo.com` adresinden gelir.
  *
  * Örnek istek:
  * `GET https://api.open-meteo.com/v1/forecast?latitude=39.92&longitude=32.85&current=...&timezone=auto`
@@ -37,10 +36,10 @@ interface ForecastApi {
 
     companion object {
         const val CURRENT_FIELDS =
-            "temperature_2m,weather_code,apparent_temperature,relative_humidity_2m,wind_speed_10m"
+            "temperature_2m,weather_code,apparent_temperature,relative_humidity_2m,wind_speed_10m,is_day"
         const val HOURLY_FIELDS = "temperature_2m,weather_code,precipitation_probability"
         const val DAILY_FIELDS =
-            "weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max"
+            "weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset"
         const val FORECAST_DAYS = 7
     }
 }
