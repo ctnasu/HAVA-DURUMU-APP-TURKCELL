@@ -47,8 +47,8 @@ interface ForecastApi {
         @Query("latitude") latitudes: String,
         @Query("longitude") longitudes: String,
         @Query("current") current: String = "temperature_2m,weather_code,is_day",
-        @Query("daily") daily: String = "sunrise,sunset",
-        @Query("forecast_days") forecastDays: Int = 1,
+        @Query("daily") daily: String = SNAPSHOT_DAILY_FIELDS,
+        @Query("forecast_days") forecastDays: Int = 2,
         @Query("timezone") timezone: String = "auto"
     ): JsonElement
 
@@ -58,6 +58,10 @@ interface ForecastApi {
         const val HOURLY_FIELDS =
             "temperature_2m,weather_code,precipitation_probability," +
                 "apparent_temperature,wind_speed_10m,relative_humidity_2m,is_day"
+
+        /** Kart özeti için: gün doğumu/batımı + bugünün ve yarının kısa özeti. */
+        const val SNAPSHOT_DAILY_FIELDS =
+            "sunrise,sunset,weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max"
         const val DAILY_FIELDS =
             "weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset"
         const val FORECAST_DAYS = 7

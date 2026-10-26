@@ -24,6 +24,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -40,6 +43,7 @@ import com.kampplus.hava.R
 import com.kampplus.hava.data.CityCatalog
 import com.kampplus.hava.model.City
 import com.kampplus.hava.model.CitySnapshot
+import com.kampplus.hava.model.LovedOne
 import com.kampplus.hava.ui.component.EmptyView
 import com.kampplus.hava.ui.component.glassTextFieldColors
 import com.kampplus.hava.ui.theme.HavaTheme
@@ -55,7 +59,13 @@ import com.kampplus.hava.ui.theme.HavaTheme
  * çevirir ve uygulama arka plandayken dinlemeyi durdurur.
  */
 @Composable
-fun CityRoute(onCityClick: (City) -> Unit, modifier: Modifier = Modifier, viewModel: CityViewModel = viewModel()) {
+fun CityRoute(
+    onCityClick: (City) -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: CityViewModel = viewModel(),
+    lovedOnesViewModel: LovedOnesViewModel = viewModel()
+) {
+    val lovedOnes by lovedOnesViewModel.lovedOnes.collectAsStateWithLifecycle()
     val query by viewModel.query.collectAsStateWithLifecycle()
     val cities by viewModel.results.collectAsStateWithLifecycle()
     val snapshots by viewModel.snapshots.collectAsStateWithLifecycle()
@@ -66,6 +76,9 @@ fun CityRoute(onCityClick: (City) -> Unit, modifier: Modifier = Modifier, viewMo
         snapshots = snapshots,
         onQueryChange = viewModel::onQueryChange,
         onCityClick = onCityClick,
+        lovedOnes = lovedOnes,
+        onAddLovedOne = lovedOnesViewModel::add,
+        onRemoveLovedOne = lovedOnesViewModel::remove,
         modifier = modifier
     )
 }
@@ -84,8 +97,22 @@ fun CityScreen(
     snapshots: Map<Int, CitySnapshot>,
     onQueryChange: (String) -> Unit,
     onCityClick: (City) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    lovedOnes: List<LovedOne> = emptyList(),
+    onAddLovedOne: (label: String, plate: Int) -> Unit = { _, _ -> },
+    onRemoveLovedOne: (Long) -> Unit = {}
 ) {
+    var showAddDialog by rememberSaveable { mutableStateOf(false) }
+    if (showAddDialog) {
+        AddLovedOneDialog(
+            onDismiss = { showAddDialog = false },
+            onConfirm = { label, plate ->
+                onAddLovedOne(label, plate)
+                showAddDialog = false
+            }
+        )
+    }
+
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -110,7 +137,15 @@ fun CityScreen(
                             message = "Yazımı kontrol et ya da plaka kodunu dene (ör. 34)."
                         )
                     } else {
-                        CityList(cities = cities, snapshots = snapshots, onCityClick = onCityClick)
+                        CityList(
+                            cities = cities,
+                            snapshots = snapshots,
+                            onCityClick = onCityClick,
+                            // Arama sürerken sevdikler gizlenir: sonuçlar ekranın başında görünsün.
+                            lovedOnes = if (query.isBlank()) lovedOnes else null,
+                            onAddLovedOne = { showAddDialog = true },
+                            onRemoveLovedOne = onRemoveLovedOne
+                        )
                     }
                 }
             }
@@ -178,12 +213,50 @@ private fun SearchField(query: String, onQueryChange: (String) -> Unit, modifier
  * `animateItem()`: arama sonucu değişince kartlar yerlerine kayarak/solarak geçer.
  */
 @Composable
-private fun CityList(cities: List<City>, snapshots: Map<Int, CitySnapshot>, onCityClick: (City) -> Unit, modifier: Modifier = Modifier) {
+private fun CityList(
+    cities: List<City>,
+    snapshots: Map<Int, CitySnapshot>,
+    onCityClick: (City) -> Unit,
+    lovedOnes: List<LovedOne>?,
+    onAddLovedOne: () -> Unit,
+    onRemoveLovedOne: (Long) -> Unit,
+    modifier: Modifier = Modifier
+) {
     LazyColumn(
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
+        // `null`: arama sürüyor, sevdikler bölümü hiç gösterilmez.
+        if (lovedOnes != null) {
+            item(key = "loved-header") { LovedOnesHeader(onAdd = onAddLovedOne, modifier = Modifier.animateItem()) }
+            if (lovedOnes.isEmpty()) {
+                item(key = "loved-empty") { LovedOnesEmptyCard(onAdd = onAddLovedOne, modifier = Modifier.animateItem()) }
+            } else {
+                items(items = lovedOnes, key = { "loved-${it.id}" }) { person ->
+                    // Plaka kodu kataloğun dışındaysa (bozuk kayıt) kart hiç çizilmez.
+                    CityCatalog.cities.firstOrNull { it.plate == person.plate }?.let { city ->
+                        LovedOneCard(
+                            person = person,
+                            city = city,
+                            snapshot = snapshots[city.plate],
+                            onRemove = { onRemoveLovedOne(person.id) },
+                            modifier = Modifier.animateItem()
+                        )
+                    }
+                }
+            }
+            item(key = "all-header") {
+                Text(
+                    text = stringResource(R.string.all_cities_title),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier
+                        .padding(start = 4.dp, top = 8.dp)
+                        .animateItem()
+                )
+            }
+        }
         items(items = cities, key = { it.plate }) { city ->
             CityCard(
                 city = city,

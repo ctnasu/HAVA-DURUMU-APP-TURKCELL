@@ -74,5 +74,14 @@ data class CitySnapshot(
     val localTime: LocalDateTime,
     val sunrise: LocalDateTime? = null,
     val sunset: LocalDateTime? = null,
-    val utcOffsetSeconds: Int? = null
+    val utcOffsetSeconds: Int? = null,
+    val tomorrow: DaySummary? = null
+)
+
+/** Bir günün kısa özeti: "Sevdiklerim" kartları yarının havasını bununla anlatır. */
+data class DaySummary(
+    val weatherCode: Int,
+    val minTemperatureC: Double,
+    val maxTemperatureC: Double,
+    val precipitationProbability: Int? = null
 )

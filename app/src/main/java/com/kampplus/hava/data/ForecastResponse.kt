@@ -6,6 +6,7 @@ import com.google.gson.annotations.SerializedName
 import com.kampplus.hava.model.CitySnapshot
 import com.kampplus.hava.model.CurrentWeather
 import com.kampplus.hava.model.DailyForecast
+import com.kampplus.hava.model.DaySummary
 import com.kampplus.hava.model.Forecast
 import com.kampplus.hava.model.HourlyForecast
 import java.time.LocalDate
@@ -178,6 +179,18 @@ private fun ForecastResponse.toSnapshot(): CitySnapshot? {
         localTime = LocalDateTime.parse(now.time),
         sunrise = daily?.sunrise?.firstOrNull()?.let(LocalDateTime::parse),
         sunset = daily?.sunset?.firstOrNull()?.let(LocalDateTime::parse),
-        utcOffsetSeconds = utcOffsetSeconds
+        utcOffsetSeconds = utcOffsetSeconds,
+        tomorrow = daily.summaryAt(1)
+    )
+}
+
+/** Günlük sütunlardan, verilen index'teki günün özetini çıkarır; eksik alan varsa `null`. */
+private fun DailyResponse?.summaryAt(index: Int): DaySummary? {
+    val daily = this ?: return null
+    return DaySummary(
+        weatherCode = daily.weatherCode?.getOrNull(index) ?: return null,
+        minTemperatureC = daily.temperatureMin?.getOrNull(index) ?: return null,
+        maxTemperatureC = daily.temperatureMax?.getOrNull(index) ?: return null,
+        precipitationProbability = daily.precipitationProbabilityMax?.getOrNull(index)
     )
 }

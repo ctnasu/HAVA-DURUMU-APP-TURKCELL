@@ -55,4 +55,50 @@ class RepositoriesTest {
 
         assertEquals(0, model.samples)
     }
+
+    @Test
+    fun `sevdikler eklenir silinir ve saklanir`() {
+        val storage = InMemoryStorage()
+        val repository = LovedOnesRepository(storage) { 1_000L }
+        repository.add("Annem", 58)
+        repository.add("Kardeşim", 35)
+
+        val reopened = LovedOnesRepository(storage)
+
+        assertEquals(listOf("Annem" to 58, "Kardeşim" to 35), reopened.lovedOnes.value.map { it.label to it.plate })
+
+        reopened.remove(reopened.lovedOnes.value.first().id)
+        assertEquals(listOf("Kardeşim"), LovedOnesRepository(storage).lovedOnes.value.map { it.label })
+    }
+
+    @Test
+    fun `ayni anda eklenen kayitlarin kimligi cakismaz`() {
+        val repository = LovedOnesRepository(InMemoryStorage()) { 5L }
+
+        repository.add("Annem", 58)
+        repository.add("Babam", 58)
+
+        assertEquals(2, repository.lovedOnes.value.map { it.id }.toSet().size)
+    }
+
+    @Test
+    fun `bos ad eklenmez ve ozel karakterler temizlenir`() {
+        val storage = InMemoryStorage()
+        val repository = LovedOnesRepository(storage)
+
+        repository.add("   ", 6)
+        repository.add("Anne\tm\nx", 6)
+
+        // Sekme ve satır sonu bir kaydı başka bir kayda taşıyamaz.
+        assertEquals(listOf("Anne m x"), LovedOnesRepository(storage).lovedOnes.value.map { it.label })
+    }
+
+    @Test
+    fun `bozuk satirlar atlanir digerleri okunur`() {
+        val storage = InMemoryStorage(mapOf("loved_ones" to "1\t58\tAnnem\nçöp\nx\t1\tHatalı\n3\t35\tBabam"))
+
+        val loved = LovedOnesRepository(storage).lovedOnes.value
+
+        assertEquals(listOf("Annem", "Babam"), loved.map { it.label })
+    }
 }

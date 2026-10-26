@@ -36,6 +36,20 @@
     <string name="detail_activities">En iyi zaman</string>
     <string name="detail_activities_hint">Bir aktiviteye dokun: sana göre en iyi saati bulurum. Cevap verdikçe senin gibi öğrenirim.</string>
 
+    <!-- Sevdiklerim -->
+    <string name="loved_title">Sevdiklerim</string>
+    <string name="loved_add">Ekle</string>
+    <string name="loved_remove">Kaldır</string>
+    <string name="loved_empty_title">Sevdiklerinin havası seninle</string>
+    <string name="loved_empty_message">Annenin ya da kardeşinin yaşadığı ili ekle; yarın hava nasıl olacaksa, ona ne söyleyeceğini sana yazayım.</string>
+    <string name="loved_loading">Yarının havası yükleniyor…</string>
+    <string name="loved_dialog_title">Sevdiğini ekle</string>
+    <string name="loved_dialog_name_hint">Kim? (örn. Annem)</string>
+    <string name="loved_dialog_city_hint">Hangi ilde yaşıyor?</string>
+    <string name="loved_dialog_confirm">Ekle</string>
+    <string name="loved_dialog_cancel">Vazgeç</string>
+    <string name="all_cities_title">Tüm iller</string>
+
     <!-- Şehir listesi (yarışma tasarımı) -->
     <string name="city_featured_title">Türkiye\'nin 81 ili</string>
     <string name="city_results_count">%1$d sonuç</string>
