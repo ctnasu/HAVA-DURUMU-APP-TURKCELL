@@ -5,6 +5,11 @@ Türkiye'nin 81 ili için **canlı gökyüzü** üzerinde çalışan, kullanıc�
 Arka plan şehrin gerçek saatine ve havasına göre çizilir: şafakta turuncu, gecede yıldızlı, yağmurda damlalı. Sıcaklığın yanında "Ne zaman koşmalıyım?" ve "Annem'e ne söylemeliyim?" gibi soruları da cevaplar.
 
 **Teknoloji:** Kotlin · Jetpack Compose (Material 3) · ViewModel + StateFlow · Coroutines · Retrofit + Gson · Navigation Compose
+<img width="323" height="665" alt="Ekran Resmi 2026-10-25 20 47 49" src="https://github.com/user-attachments/assets/b2faf986-6c87-44ef-bfe1-56accfa061f7" />
+<img width="1080" height="2424" alt="Screenshot_1792996545" src="https://github.com/user-attachments/assets/0ad9fbca-af61-44ab-ac59-9c1ec371b8fa" />
+<img width="1080" height="2424" alt="Screenshot_1792996545" src="https://github.com/user-attachments/assets/d7d6447c-715e-4614-b66f-0adcfb18d26f" />
+<img width="1080" height="2424" alt="Screenshot_1792996583" src="https://github.com/user-attachments/assets/eb0add1e-5643-46d1-ab1a-e52419277a11" />
+<img width="1080" height="2424" alt="Screenshot_1792996592" src="https://github.com/user-attachments/assets/9fa54373-5668-4cd1-9a90-a364df05f91e" />
 
 ## Özellikler
 
