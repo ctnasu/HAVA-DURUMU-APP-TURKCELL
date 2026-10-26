@@ -1,5 +1,4 @@
-<img width="1080" height="2424" alt="Screenshot_20261026_094743" src="https://github.com/user-attachments/assets/0c976afd-e02a-4393-b70b-7ffed2bffb4a" /># Hava
-
+# Hava
 Türkiye'nin 81 ili için **canlı gökyüzü** üzerinde çalışan, kullanıcıya göre öğrenen bir hava durumu uygulaması.
 
 Arka plan şehrin gerçek saatine ve havasına göre çizilir: şafakta turuncu, gecede yıldızlı, yağmurda damlalı. Sıcaklığın yanında "Ne zaman koşmalıyım?" ve "Annem'e ne söylemeliyim?" gibi soruları da cevaplar.
