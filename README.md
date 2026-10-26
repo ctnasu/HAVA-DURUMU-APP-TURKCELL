@@ -5,11 +5,7 @@ Türkiye'nin 81 ili için **canlı gökyüzü** üzerinde çalışan, kullanıc�
 Arka plan şehrin gerçek saatine ve havasına göre çizilir: şafakta turuncu, gecede yıldızlı, yağmurda damlalı. Sıcaklığın yanında "Ne zaman koşmalıyım?" ve "Annem'e ne söylemeliyim?" gibi soruları da cevaplar.
 
 **Teknoloji:** Kotlin · Jetpack Compose (Material 3) · ViewModel + StateFlow · Coroutines · Retrofit + Gson · Navigation Compose
-<img width="1080" height="2424" alt="Screenshot_20261026_094654" src="https://github.com/user-attachments/assets/92b5ea74-2e94-4ddf-a936-2fd43c51e8a4" />
-<img width="1080" height="2424" alt="Screenshot_20261026_094708" src="https://github.com/user-attachments/assets/3ba36a4e-8bd5-4577-bfd2-f194f64a8606" />
-<img width="1080" height="2424" alt="Screenshot_20261026_094731" src="https://github.com/user-attachments/assets/516c739e-9b49-42b0-88d6-8055272dcaca" />
-<img width="1080" height="2424" alt="Screenshot_20261026_094743" src="https://github.com/user-attachments/assets/9ed774f8-85c0-4edc-8b94-8dd0cda15d47" />
-<img width="1080" height="2424" alt="Screenshot_20261026_094753" src="https://github.com/user-attachments/assets/b0ae8822-58d5-469b-9e8c-c0bfd576ecce" />
+<img width="1080" height="2424" alt="Screenshot_20261026_094654" src="https://github.com/user-attachments/assets/92b5ea74-2e94-4ddf-a936-2fd43c51e8a4" /> <img width="1080" height="2424" alt="Screenshot_20261026_094708" src="https://github.com/user-attachments/assets/3ba36a4e-8bd5-4577-bfd2-f194f64a8606" /> <img width="1080" height="2424" alt="Screenshot_20261026_094731" src="https://github.com/user-attachments/assets/516c739e-9b49-42b0-88d6-8055272dcaca" /> <img width="1080" height="2424" alt="Screenshot_20261026_094743" src="https://github.com/user-attachments/assets/9ed774f8-85c0-4edc-8b94-8dd0cda15d47" /> <img width="1080" height="2424" alt="Screenshot_20261026_094753" src="https://github.com/user-attachments/assets/b0ae8822-58d5-469b-9e8c-c0bfd576ecce" />
 
 
 ## Özellikler
