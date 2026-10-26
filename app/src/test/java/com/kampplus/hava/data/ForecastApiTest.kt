@@ -74,6 +74,24 @@ class ForecastApiTest {
     }
 
     @Test
+    fun `aktivite icin gereken saatlik alanlar da ayni index ile okunur`() = runTest {
+        server.enqueue(MockResponse().setBody(readResource("forecast_single.json")))
+
+        val hourly = fetchForecast().hourly
+
+        // index 1 atlandığı için 02:00 satırı, dizilerin 2. index'indeki değerleri almalı.
+        assertEquals(11.9, checkNotNull(hourly[0].apparentTemperatureC), 0.01)
+        assertEquals(6.5, checkNotNull(hourly[0].windSpeedKmh), 0.01)
+        assertEquals(71, hourly[0].humidityPercent)
+        assertEquals(false, hourly[0].isDay)
+
+        assertEquals(10.2, checkNotNull(hourly[1].apparentTemperatureC), 0.01)
+        assertEquals(14.2, checkNotNull(hourly[1].windSpeedKmh), 0.01)
+        assertEquals(83, hourly[1].humidityPercent)
+        assertEquals(true, hourly[1].isDay)
+    }
+
+    @Test
     fun `gunluk sutunlar min ve max ile eslenir`() = runTest {
         server.enqueue(MockResponse().setBody(readResource("forecast_single.json")))
 

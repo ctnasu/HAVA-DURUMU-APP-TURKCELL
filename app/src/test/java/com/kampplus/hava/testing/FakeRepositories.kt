@@ -63,3 +63,18 @@ fun sampleSnapshot() = CitySnapshot(
     isDay = true,
     localTime = LocalDateTime.parse("2026-09-24T11:30")
 )
+
+/** Testlerde Android olmadan çalışan, bellekteki sahte depo. */
+class InMemoryStorage(initial: Map<String, String> = emptyMap()) : com.kampplus.hava.data.KeyValueStorage {
+    val values = initial.toMutableMap()
+
+    override fun read(key: String): String? = values[key]
+
+    override fun write(key: String, value: String) {
+        values[key] = value
+    }
+
+    override fun remove(key: String) {
+        values.remove(key)
+    }
+}

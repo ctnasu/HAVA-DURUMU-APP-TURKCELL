@@ -6,7 +6,11 @@
     "time": ["2026-09-24T00:00", "2026-09-24T01:00", "2026-09-24T02:00"],
     "temperature_2m": [12.7, null, 11.3],
     "weather_code": [2, 2, 61],
-    "precipitation_probability": [0, 0, 35]
+    "precipitation_probability": [0, 0, 35],
+    "apparent_temperature": [11.9, 11.0, 10.2],
+    "wind_speed_10m": [6.5, 6.0, 14.2],
+    "relative_humidity_2m": [71, 74, 83],
+    "is_day": [0, 0, 1]
   },
   "daily": {
     "time": ["2026-09-24", "2026-09-25"],

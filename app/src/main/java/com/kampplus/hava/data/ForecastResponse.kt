@@ -62,7 +62,15 @@ data class HourlyResponse(
     @SerializedName("weather_code")
     val weatherCode: List<Int?>? = null,
     @SerializedName("precipitation_probability")
-    val precipitationProbability: List<Int?>? = null
+    val precipitationProbability: List<Int?>? = null,
+    @SerializedName("apparent_temperature")
+    val apparentTemperature: List<Double?>? = null,
+    @SerializedName("wind_speed_10m")
+    val windSpeed: List<Double?>? = null,
+    @SerializedName("relative_humidity_2m")
+    val relativeHumidity: List<Int?>? = null,
+    @SerializedName("is_day")
+    val isDay: List<Int?>? = null
 )
 
 data class DailyResponse(
@@ -123,7 +131,12 @@ private fun HourlyResponse?.toHourlyForecasts(): List<HourlyForecast> {
             time = LocalDateTime.parse(times[index]),
             temperatureC = temperature,
             weatherCode = code,
-            precipitationProbability = precipitationProbability?.getOrNull(index)
+            precipitationProbability = precipitationProbability?.getOrNull(index),
+            apparentTemperatureC = apparentTemperature?.getOrNull(index),
+            windSpeedKmh = windSpeed?.getOrNull(index),
+            humidityPercent = relativeHumidity?.getOrNull(index),
+            // Alan gelmezse gündüz varsayılır; yalnızca görseli ve aktivite puanını etkiler.
+            isDay = isDay?.getOrNull(index) != 0
         )
     }
 }

@@ -29,12 +29,21 @@ data class CurrentWeather(
     val isDay: Boolean = true
 )
 
-/** Tek bir saatlik tahmin satırı. */
+/**
+ * Tek bir saatlik tahmin satırı.
+ *
+ * Son dört alan servis tarafından her zaman gönderilmeyebilir; aktivite penceresi
+ * hesabı eksik alanlar için makul varsayılanlara düşer.
+ */
 data class HourlyForecast(
     val time: LocalDateTime,
     val temperatureC: Double,
     val weatherCode: Int,
-    val precipitationProbability: Int? = null
+    val precipitationProbability: Int? = null,
+    val apparentTemperatureC: Double? = null,
+    val windSpeedKmh: Double? = null,
+    val humidityPercent: Int? = null,
+    val isDay: Boolean = true
 )
 
 /**

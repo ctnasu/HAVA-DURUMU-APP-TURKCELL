@@ -64,6 +64,9 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kampplus.hava.R
+import com.kampplus.hava.model.Activity
+import com.kampplus.hava.model.ActivityModel
+import com.kampplus.hava.model.Conditions
 import com.kampplus.hava.model.CurrentWeather
 import com.kampplus.hava.model.DailyForecast
 import com.kampplus.hava.model.Forecast
@@ -87,8 +90,14 @@ import kotlinx.coroutines.delay
  * (Bkz. [com.kampplus.hava.ui.city.CityRoute] — aynı desen.)
  */
 @Composable
-fun ForecastRoute(onBack: () -> Unit, modifier: Modifier = Modifier, viewModel: ForecastViewModel = viewModel()) {
+fun ForecastRoute(
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: ForecastViewModel = viewModel(),
+    activityViewModel: ActivityViewModel = viewModel()
+) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val activityModels by activityViewModel.models.collectAsStateWithLifecycle()
 
     ForecastScreen(
         cityName = viewModel.cityName,
@@ -96,6 +105,9 @@ fun ForecastRoute(onBack: () -> Unit, modifier: Modifier = Modifier, viewModel: 
         uiState = uiState,
         onBack = onBack,
         onRetry = viewModel::onRetry,
+        activityModels = activityModels,
+        onActivityFeedback = activityViewModel::onFeedback,
+        onActivityReset = activityViewModel::onReset,
         modifier = modifier
     )
 }
@@ -118,10 +130,15 @@ fun ForecastScreen(
     uiState: LoadState<Forecast>,
     onBack: () -> Unit,
     onRetry: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    activityModels: Map<Activity, ActivityModel> = emptyMap(),
+    onActivityFeedback: (Activity, Conditions, Boolean) -> Unit = { _, _, _ -> },
+    onActivityReset: (Activity) -> Unit = {}
 ) {
     val forecast = (uiState as? LoadState.Success)?.data
     val upcoming = remember(forecast) { forecast?.let { upcomingHours(it, HOURLY_COUNT) }.orEmpty() }
+    // Aktivite pencereleri "yarın sabah" gibi daha uzak saatlere de bakar.
+    val activityHours = remember(forecast) { forecast?.let { upcomingHours(it, ACTIVITY_HOURS) }.orEmpty() }
     // 0 = şimdi. Yeni veri gelince zaman makinesi "şimdi"ye döner.
     var selectedHour by remember(forecast) { mutableIntStateOf(0) }
     val sky = when {
@@ -168,8 +185,12 @@ fun ForecastScreen(
                         subtitle = subtitle,
                         forecast = uiState.data,
                         upcoming = upcoming,
+                        activityHours = activityHours,
+                        activityModels = activityModels,
                         selectedHour = selectedHour,
-                        onSelectHour = { selectedHour = it }
+                        onSelectHour = { selectedHour = it },
+                        onActivityFeedback = onActivityFeedback,
+                        onActivityReset = onActivityReset
                     )
                 }
             }
@@ -192,8 +213,12 @@ private fun ForecastContent(
     subtitle: String,
     forecast: Forecast,
     upcoming: List<HourlyForecast>,
+    activityHours: List<HourlyForecast>,
+    activityModels: Map<Activity, ActivityModel>,
     selectedHour: Int,
     onSelectHour: (Int) -> Unit,
+    onActivityFeedback: (Activity, Conditions, Boolean) -> Unit,
+    onActivityReset: (Activity) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val now = forecast.current.observedAt
@@ -237,15 +262,30 @@ private fun ForecastContent(
                 )
             }
         }
+        if (activityHours.size > Activity.entries.maxOf { it.windowHours }) {
+            GlassCard(
+                title = stringResource(R.string.detail_activities),
+                hint = stringResource(R.string.detail_activities_hint),
+                modifier = Modifier.staggeredEntrance(3)
+            ) {
+                ActivityWindows(
+                    now = now,
+                    hours = activityHours,
+                    models = activityModels,
+                    onFeedback = onActivityFeedback,
+                    onReset = onActivityReset
+                )
+            }
+        }
         if (forecast.daily.isNotEmpty()) {
-            GlassCard(title = stringResource(R.string.detail_daily), modifier = Modifier.staggeredEntrance(3)) {
+            GlassCard(title = stringResource(R.string.detail_daily), modifier = Modifier.staggeredEntrance(4)) {
                 DailyList(days = forecast.daily, currentTemperature = forecast.current.temperatureC)
             }
         }
         val sunrise = today?.sunrise
         val sunset = today?.sunset
         if (sunrise != null && sunset != null) {
-            GlassCard(title = stringResource(R.string.detail_sun), modifier = Modifier.staggeredEntrance(4)) {
+            GlassCard(title = stringResource(R.string.detail_sun), modifier = Modifier.staggeredEntrance(5)) {
                 SunSection(now = now, sunrise = sunrise, sunset = sunset)
             }
         }
@@ -551,6 +591,7 @@ private fun degrees(celsius: Double) = "${celsius.roundToInt()}°"
 private fun percent(value: Int?) = value?.takeIf { it > 0 }?.let { "%$it" }
 
 private const val HOURLY_COUNT = 24
+private const val ACTIVITY_HOURS = 48
 private const val STAGGER_DELAY_MS = 70L
 private val TURKISH: Locale = Locale.forLanguageTag("tr")
 private val HOUR_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
